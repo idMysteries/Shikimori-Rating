@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Shikimori Rating
 // @namespace    http://shikimori.org/
-// @version      2.8.4
+// @version      2.8.5
 // @description  Ratings from Shikimori users
 // @author       ImoutoChan
 // @match        *://shikimori.org/*
@@ -103,7 +103,7 @@ const addShikiRating = () => {
     }, { totalScore: 0, totalVotes: 0 });
 
     const shikiScore = totalScore / totalVotes;
-    const roundedScore = Math.round(shikiScore);
+    const roundedScore = Math.floor(shikiScore);
     log(shikiScore);
 
     const scoreValueElement = shikiRatingElement.querySelector("div.text-score > div.score-value");
