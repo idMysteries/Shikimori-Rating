@@ -16,49 +16,42 @@
 // @grant        none
 // ==/UserScript==
 
-var debug = false;
+const debug = false;
 
-function log(message) {
-    if (!debug) {
-        return;
+const log = (message) => {
+    if (debug) {
+        console.log(`ShikiRating: ${message}`);
     }
-    console.log('ShikiRating: ' + message);
-}
+};
 
-function getLocale() {
-    return document.querySelector('body').getAttribute('data-locale');
-}
+const getLocale = () => document.body.getAttribute('data-locale');
 
-function needAddRating(urlpart) {
-    return urlpart === "/animes" ||
-           urlpart === "/mangas" ||
-           urlpart === "/ranobe";
-}
+const needAddRating = (urlpart) => ["/animes", "/mangas", "/ranobe"].includes(urlpart);
 
-function removeLastClass(domElement) {
-    var classes = domElement.classList;
-    classes.remove(classes.item(classes.length - 1));
-}
+const removeLastClass = (domElement) => {
+    const classes = domElement.classList;
+    if (classes.length > 0) {
+        classes.remove(classes[classes.length - 1]);
+    }
+};
 
-function setNoData(domElement) {
-    var noData = document.createElement('p');
-    noData.classList.add('b-nothing_here');
-    noData.innerText = getLocale() === 'ru'
-        ? `Недостаточно данных`
-        : `Insufficient data`;
-
+const setNoData = (domElement) => {
     domElement.innerHTML = '';
+    const noData = document.createElement('p');
+    noData.className = 'b-nothing_here';
+    noData.innerText = getLocale() === 'ru' ? 'Недостаточно данных' : 'Insufficient data';
+    Object.assign(noData.style, {
+        textAlign: 'center',
+        color: '#7b8084',
+        marginTop: '15px',
+    });
     domElement.appendChild(noData);
+};
 
-    domElement.style.textAlign = 'center';
-    domElement.style.color = '#7b8084';
-    domElement.style.marginTop = '15px';
-}
-
-function appendShikiRating() {
+const appendShikiRating = () => {
     'use strict';
 
-    var urlpart = window.location.pathname.substring(0,7);
+    const urlpart = window.location.pathname.substring(0, 7);
     log(urlpart);
 
     if (!needAddRating(urlpart)) {
@@ -66,102 +59,104 @@ function appendShikiRating() {
         return;
     }
 
-    if (document.querySelector("#shiki-score") !== null) {
+    if (document.querySelector("#shiki-score")) {
         log('already created');
         return;
     }
 
-    if (document.querySelector(".scores > .b-rate") === null) {
+    const malRate = document.querySelector(".scores > .b-rate");
+    if (!malRate) {
         log("can't find default rating");
         return;
     }
 
-    // get current rating element
-    var malRate = document.querySelector(".scores > .b-rate");
-    malRate.setAttribute('id', 'mal-score');
+    malRate.id = 'mal-score';
 
-    // clone it to new element
-    var newShikiRate = malRate.cloneNode(true);
-    newShikiRate.setAttribute('id', 'shiki-score');
+    const newShikiRate = malRate.cloneNode(true);
+    newShikiRate.id = 'shiki-score';
 
-    // append cloned rating to parent container
-    var rateContainer = document.querySelector(".scores");
+    const rateContainer = document.querySelector(".scores");
     rateContainer.appendChild(newShikiRate);
 
-    // load scores stats
-    var scoreDataJson = document.querySelector("#rates_scores_stats").getAttribute("data-stats");
-    var scoreData = JSON.parse(scoreDataJson);
-    log(scoreDataJson);
-
-    // set no data lable
-    if (scoreData === null || scoreData.length === 0) {
+    const scoreDataJson = document.querySelector("#rates_scores_stats")?.getAttribute("data-stats");
+    if (!scoreDataJson) {
+        log('no score data found');
         setNoData(newShikiRate);
         return;
     }
 
-    // calculate shiki rating
-    var sumScore = 0;
-    var totalCount = 0;
-    for (var i = 0; i < scoreData.length; i++) {
-        sumScore += scoreData[i][1] * scoreData[i][0];
-        totalCount += scoreData[i][1] * 1;
+    let scoreData;
+    try {
+        scoreData = JSON.parse(scoreDataJson);
+    } catch (e) {
+        log('error parsing score data');
+        setNoData(newShikiRate);
+        return;
     }
-    var shikiScore = sumScore / totalCount;
-    var shikiScoreDigit = Math.round(shikiScore);
+
+    if (!scoreData || scoreData.length === 0) {
+        setNoData(newShikiRate);
+        return;
+    }
+
+    const { sumScore, totalCount } = scoreData.reduce((acc, [score, count]) => {
+        acc.sumScore += score * count;
+        acc.totalCount += count;
+        return acc;
+    }, { sumScore: 0, totalCount: 0 });
+
+    const shikiScore = sumScore / totalCount;
+    const shikiScoreDigit = Math.round(shikiScore);
     log(shikiScore);
 
-    // set number value
-    var scoreElement = newShikiRate.querySelector("div.text-score > div.score-value");
+    const scoreElement = newShikiRate.querySelector("div.text-score > div.score-value");
     scoreElement.innerHTML = shikiScore.toFixed(2);
     removeLastClass(scoreElement);
-    scoreElement.classList.add("score-" + shikiScoreDigit);
+    scoreElement.classList.add(`score-${shikiScoreDigit}`);
 
-    // set stars calue
-    var starElement = newShikiRate.querySelector("div.stars-container > div.stars.score");
+    const starElement = newShikiRate.querySelector("div.stars-container > div.stars.score");
     removeLastClass(starElement);
     starElement.style.color = '#456';
-    starElement.classList.add("score-" + shikiScoreDigit);
+    starElement.classList.add(`score-${shikiScoreDigit}`);
 
-    // load labels
-    var labelData = getLocale() === 'ru' ?
-            {"0":"","1":"Хуже некуда","2":"Ужасно","3":"Очень плохо","4":"Плохо","5":"Более-менее","6":"Нормально","7":"Хорошо","8":"Отлично","9":"Великолепно","10":"Эпик вин!"} :
-            {"0":"","1":"Worst Ever","2":"Terrible","3":"Very Bad","4":"Bad","5":"So-so","6":"Fine","7":"Good","8":"Excellent","9":"Great","10":"Masterpiece!"};
+    const labelData = getLocale() === 'ru' ?
+        { "0": "", "1": "Хуже некуда", "2": "Ужасно", "3": "Очень плохо", "4": "Плохо", "5": "Более-менее", "6": "Нормально", "7": "Хорошо", "8": "Отлично", "9": "Великолепно", "10": "Эпик вин!" } :
+        { "0": "", "1": "Worst Ever", "2": "Terrible", "3": "Very Bad", "4": "Bad", "5": "So-so", "6": "Fine", "7": "Good", "8": "Excellent", "9": "Great", "10": "Masterpiece!" };
 
-    // set label under score
     newShikiRate.querySelector("div.text-score > div.score-notice").textContent = labelData[shikiScoreDigit];
 
-    // set mal description label
-    var malLabel = getLocale() === 'ru' ? 'На основе оценок mal' : 'From MAL users';
-    malRate.insertAdjacentHTML('afterend', '<p class="score-source">' + malLabel + '</p>');
+    const malLabel = getLocale() === 'ru' ? 'На основе оценок mal' : 'From MAL users';
+    malRate.insertAdjacentHTML('afterend', `<p class="score-source">${malLabel}</p>`);
 
-    // set shiki description label
-    var shikiCountLabel = '<strong>' + totalCount + '</strong>';
-    shikiCountLabel = (getLocale() === 'ru')
-        ? 'На основе ' + shikiCountLabel + ' оценок shiki'
-        : 'From ' + shikiCountLabel + ' shiki users';
-    newShikiRate.insertAdjacentHTML('afterend', '<p class="score-counter">' + shikiCountLabel + '</p>');
+    const shikiCountLabel = `<strong>${totalCount}</strong>`;
+    const shikiLabel = getLocale() === 'ru' ?
+        `На основе ${shikiCountLabel} оценок shiki` :
+        `From ${shikiCountLabel} shiki users`;
+    newShikiRate.insertAdjacentHTML('afterend', `<p class="score-counter">${shikiLabel}</p>`);
 
-    // set style for mal description label
-    var malScoreLabelElement = document.querySelector('.score-source');
-    malScoreLabelElement.style.marginBottom = '15px';
-    malScoreLabelElement.style.textAlign = 'center';
-    malScoreLabelElement.style.color = '#7b8084';
+    const malScoreLabelElement = document.querySelector('.score-source');
+    Object.assign(malScoreLabelElement.style, {
+        marginBottom: '15px',
+        textAlign: 'center',
+        color: '#7b8084',
+    });
 
-    // set style for shiki description label
-    var shikiScoreLabelElement = document.querySelector('.score-counter');
-    shikiScoreLabelElement.style.textAlign = 'center';
-    shikiScoreLabelElement.style.color = '#7b8084';
-}
+    const shikiScoreLabelElement = document.querySelector('.score-counter');
+    Object.assign(shikiScoreLabelElement.style, {
+        textAlign: 'center',
+        color: '#7b8084',
+    });
+};
 
-function ready(fn) {
+const ready = (fn) => {
     document.addEventListener('page:load', fn);
     document.addEventListener('turbolinks:load', fn);
 
-    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading"){
+    if (document.readyState !== "loading") {
         fn();
     } else {
         document.addEventListener('DOMContentLoaded', fn);
     }
-}
+};
 
 ready(appendShikiRating);
