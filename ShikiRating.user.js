@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Shiki Rating
+// @name         Shikimori Rating
 // @namespace    http://shikimori.org/
-// @version      2.8.3
-// @description  Rating from shiki users
+// @version      2.8.4
+// @description  Ratings from Shikimori users
 // @author       ImoutoChan
 // @match        http://shikimori.org/*
 // @match        https://shikimori.org/*
@@ -10,129 +10,129 @@
 // @match        https://shikimori.one/*
 // @match        http://shikimori.me/*
 // @match        https://shikimori.me/*
-// @downloadURL  https://github.com/ImoutoChan/shiki-rating-userscript/raw/master/ShikiRating.user.js
-// @updateURL    https://github.com/ImoutoChan/shiki-rating-userscript/raw/master/ShikiRating.user.js
+// @downloadURL  https://github.com/idMysteries/Shikimori-Rating/raw/master/ShikiRating.user.js
+// @updateURL    https://github.com/idMysteries/Shikimori-Rating/raw/master/ShikiRating.user.js
 // @license      MIT
 // @grant        none
 // ==/UserScript==
 
-const debug = false;
+const DEBUG_MODE = false;
 
 const log = (message) => {
-    if (debug) {
+    if (DEBUG_MODE) {
         console.log(`ShikiRating: ${message}`);
     }
 };
 
 const getLocale = () => document.body.getAttribute('data-locale');
 
-const needAddRating = (urlpart) => ["/animes", "/mangas", "/ranobe"].includes(urlpart);
+const shouldAddRating = (urlPart) => ["/animes", "/mangas", "/ranobe"].includes(urlPart);
 
-const removeLastClass = (domElement) => {
-    const classes = domElement.classList;
+const removeLastClass = (element) => {
+    const classes = element.classList;
     if (classes.length > 0) {
         classes.remove(classes[classes.length - 1]);
     }
 };
 
-const setNoData = (domElement) => {
-    domElement.innerHTML = '';
-    const noData = document.createElement('p');
-    noData.className = 'b-nothing_here';
-    noData.innerText = getLocale() === 'ru' ? 'Недостаточно данных' : 'Insufficient data';
-    Object.assign(noData.style, {
+const displayNoDataMessage = (element) => {
+    element.innerHTML = '';
+    const noDataMessage = document.createElement('p');
+    noDataMessage.className = 'b-nothing_here';
+    noDataMessage.innerText = getLocale() === 'ru' ? 'Недостаточно данных' : 'Insufficient data';
+    Object.assign(noDataMessage.style, {
         textAlign: 'center',
         color: '#7b8084',
         marginTop: '15px',
     });
-    domElement.appendChild(noData);
+    element.appendChild(noDataMessage);
 };
 
-const appendShikiRating = () => {
+const addShikiRating = () => {
     'use strict';
 
-    const urlpart = window.location.pathname.substring(0, 7);
-    log(urlpart);
+    const urlPart = window.location.pathname.substring(0, 7);
+    log(urlPart);
 
-    if (!needAddRating(urlpart)) {
-        log('wrong page');
+    if (!shouldAddRating(urlPart)) {
+        log('Not a valid page for rating');
         return;
     }
 
     if (document.querySelector("#shiki-score")) {
-        log('already created');
+        log('Rating already exists');
         return;
     }
 
-    const malRate = document.querySelector(".scores > .b-rate");
-    if (!malRate) {
-        log("can't find default rating");
+    const malRatingElement = document.querySelector(".scores > .b-rate");
+    if (!malRatingElement) {
+        log("Default rating not found");
         return;
     }
 
-    malRate.id = 'mal-score';
+    malRatingElement.id = 'mal-score';
 
-    const newShikiRate = malRate.cloneNode(true);
-    newShikiRate.id = 'shiki-score';
+    const shikiRatingElement = malRatingElement.cloneNode(true);
+    shikiRatingElement.id = 'shiki-score';
 
-    const rateContainer = document.querySelector(".scores");
-    rateContainer.appendChild(newShikiRate);
+    const scoresContainer = document.querySelector(".scores");
+    scoresContainer.appendChild(shikiRatingElement);
 
     const scoreDataJson = document.querySelector("#rates_scores_stats")?.getAttribute("data-stats");
     if (!scoreDataJson) {
-        log('no score data found');
-        setNoData(newShikiRate);
+        log('No score data found');
+        displayNoDataMessage(shikiRatingElement);
         return;
     }
 
     let scoreData;
     try {
         scoreData = JSON.parse(scoreDataJson);
-    } catch (e) {
-        log('error parsing score data');
-        setNoData(newShikiRate);
+    } catch (error) {
+        log('Error parsing score data');
+        displayNoDataMessage(shikiRatingElement);
         return;
     }
 
     if (!scoreData || scoreData.length === 0) {
-        setNoData(newShikiRate);
+        displayNoDataMessage(shikiRatingElement);
         return;
     }
 
-    const { sumScore, totalCount } = scoreData.reduce((acc, [score, count]) => {
-        acc.sumScore += score * count;
-        acc.totalCount += count;
+    const { totalScore, totalVotes } = scoreData.reduce((acc, [score, count]) => {
+        acc.totalScore += score * count;
+        acc.totalVotes += count;
         return acc;
-    }, { sumScore: 0, totalCount: 0 });
+    }, { totalScore: 0, totalVotes: 0 });
 
-    const shikiScore = sumScore / totalCount;
-    const shikiScoreDigit = Math.round(shikiScore);
+    const shikiScore = totalScore / totalVotes;
+    const roundedScore = Math.round(shikiScore);
     log(shikiScore);
 
-    const scoreElement = newShikiRate.querySelector("div.text-score > div.score-value");
-    scoreElement.innerHTML = shikiScore.toFixed(2);
-    removeLastClass(scoreElement);
-    scoreElement.classList.add(`score-${shikiScoreDigit}`);
+    const scoreValueElement = shikiRatingElement.querySelector("div.text-score > div.score-value");
+    scoreValueElement.innerHTML = shikiScore.toFixed(2);
+    removeLastClass(scoreValueElement);
+    scoreValueElement.classList.add(`score-${roundedScore}`);
 
-    const starElement = newShikiRate.querySelector("div.stars-container > div.stars.score");
-    removeLastClass(starElement);
-    starElement.style.color = '#456';
-    starElement.classList.add(`score-${shikiScoreDigit}`);
+    const starContainerElement = shikiRatingElement.querySelector("div.stars-container > div.stars.score");
+    removeLastClass(starContainerElement);
+    starContainerElement.style.color = '#456';
+    starContainerElement.classList.add(`score-${roundedScore}`);
 
-    const labelData = getLocale() === 'ru' ?
+    const scoreLabels = getLocale() === 'ru' ?
         { "0": "", "1": "Хуже некуда", "2": "Ужасно", "3": "Очень плохо", "4": "Плохо", "5": "Более-менее", "6": "Нормально", "7": "Хорошо", "8": "Отлично", "9": "Великолепно", "10": "Эпик вин!" } :
         { "0": "", "1": "Worst Ever", "2": "Terrible", "3": "Very Bad", "4": "Bad", "5": "So-so", "6": "Fine", "7": "Good", "8": "Excellent", "9": "Great", "10": "Masterpiece!" };
 
-    newShikiRate.querySelector("div.text-score > div.score-notice").textContent = labelData[shikiScoreDigit];
+    shikiRatingElement.querySelector("div.text-score > div.score-notice").textContent = scoreLabels[roundedScore];
 
-    const malLabel = getLocale() === 'ru' ? 'На основе оценок mal' : 'From MAL users';
-    malRate.insertAdjacentHTML('afterend', `<p class="score-source">${malLabel}</p>`);
+    const malSourceLabel = getLocale() === 'ru' ? 'На основе оценок MAL' : 'From MAL users';
+    malRatingElement.insertAdjacentHTML('afterend', `<p class="score-source">${malSourceLabel}</p>`);
 
-    const shikiCountLabel = `<strong>${totalCount}</strong>`;
-    const shikiLabel = getLocale() === 'ru' ?
-        `На основе ${shikiCountLabel} оценок shiki` :
-        `From ${shikiCountLabel} shiki users`;
-    newShikiRate.insertAdjacentHTML('afterend', `<p class="score-counter">${shikiLabel}</p>`);
+    const voteCountLabel = `<strong>${totalVotes}</strong>`;
+    const shikiSourceLabel = getLocale() === 'ru' ?
+        `На основе ${voteCountLabel} оценок Shikimori` :
+        `From ${voteCountLabel} Shikimori users`;
+    shikiRatingElement.insertAdjacentHTML('afterend', `<p class="score-counter">${shikiSourceLabel}</p>`);
 
     const malScoreLabelElement = document.querySelector('.score-source');
     Object.assign(malScoreLabelElement.style, {
@@ -148,15 +148,15 @@ const appendShikiRating = () => {
     });
 };
 
-const ready = (fn) => {
-    document.addEventListener('page:load', fn);
-    document.addEventListener('turbolinks:load', fn);
+const onDocumentReady = (callback) => {
+    document.addEventListener('page:load', callback);
+    document.addEventListener('turbolinks:load', callback);
 
     if (document.readyState !== "loading") {
-        fn();
+        callback();
     } else {
-        document.addEventListener('DOMContentLoaded', fn);
+        document.addEventListener('DOMContentLoaded', callback);
     }
 };
 
-ready(appendShikiRating);
+onDocumentReady(addShikiRating);
