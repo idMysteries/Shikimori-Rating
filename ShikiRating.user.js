@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Shikimori Rating
 // @namespace    http://shikimori.org/
-// @version      2.8.5
+// @version      2.8.6
 // @description  Ratings from Shikimori users
 // @author       ImoutoChan
 // @match        *://shikimori.org/*
@@ -114,7 +114,7 @@ const addShikiRating = () => {
     const starContainerElement = shikiRatingElement.querySelector("div.stars-container > div.stars.score");
     removeLastClass(starContainerElement);
     starContainerElement.style.color = '#456';
-    starContainerElement.classList.add(`score-${roundedScore}`);
+    starContainerElement.classList.add(`score-${Math.round(shikiScore)}`);
 
     const scoreLabels = getLocale() === 'ru' ?
         { "0": "", "1": "Хуже некуда", "2": "Ужасно", "3": "Очень плохо", "4": "Плохо", "5": "Более-менее", "6": "Нормально", "7": "Хорошо", "8": "Отлично", "9": "Великолепно", "10": "Эпик вин!" } :
