@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Shikimori Rating
 // @namespace    http://shikimori.org/
-// @version      2.8.8
+// @version      3.0.0
 // @description  Ratings from Shikimori users
 // @author       ImoutoChan
 // @match        *://shikimori.org/*
@@ -46,20 +46,10 @@ const displayNoDataMessage = (element) => {
 };
 
 function getRatingWord(number) {
-    const cases = ['оценки', 'оценок'];
-
-    if (number % 100 >= 11 && number % 100 <= 19) {
-      return cases[1];
+    if (number % 10 === 1 && number % 100 !== 11) {
+        return 'оценки';
     }
-
-    const lastDigit = number % 10;
-
-    switch (lastDigit) {
-      case 1:
-        return cases[0];
-      default:
-        return cases[1];
-    }
+    return 'оценок';
 }
 
 const addShikiRating = () => {
