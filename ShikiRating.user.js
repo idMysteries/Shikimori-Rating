@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Shikimori Rating
 // @namespace    http://shikimori.org/
-// @version      2.8.6
+// @version      2.8.7
 // @description  Ratings from Shikimori users
 // @author       ImoutoChan
 // @match        *://shikimori.org/*
@@ -44,6 +44,27 @@ const displayNoDataMessage = (element) => {
     });
     element.appendChild(noDataMessage);
 };
+
+function getRatingWord(number) {
+    const cases = ['оценки', 'оценок'];
+
+    if (number % 100 >= 11 && number % 100 <= 19) {
+      return cases[1];
+    }
+
+    const lastDigit = number % 10;
+
+    switch (lastDigit) {
+      case 1:
+        return cases[0];
+      case 2:
+      case 3:
+      case 4:
+        return cases[0];
+      default:
+        return cases[1];
+    }
+}
 
 const addShikiRating = () => {
     'use strict';
@@ -127,7 +148,7 @@ const addShikiRating = () => {
 
     const voteCountLabel = `<strong>${totalVotes}</strong>`;
     const shikiSourceLabel = getLocale() === 'ru' ?
-        `На основе ${voteCountLabel} оценок Shikimori` :
+        `На основе ${voteCountLabel} ${getRatingWord(totalVotes)} Shikimori` :
         `From ${voteCountLabel} Shikimori users`;
     shikiRatingElement.insertAdjacentHTML('afterend', `<p class="score-counter">${shikiSourceLabel}</p>`);
 
