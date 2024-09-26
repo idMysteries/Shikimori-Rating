@@ -45,13 +45,6 @@ const displayNoDataMessage = (element) => {
     element.appendChild(noDataMessage);
 };
 
-function getRatingWord(number) {
-    if (number % 10 === 1 && number % 100 !== 11) {
-        return 'оценки';
-    }
-    return 'оценок';
-}
-
 const addShikiRating = () => {
     'use strict';
 
@@ -132,9 +125,10 @@ const addShikiRating = () => {
     const malSourceLabel = getLocale() === 'ru' ? 'На основе оценок MAL' : 'From MAL users';
     malRatingElement.insertAdjacentHTML('afterend', `<p class="score-source">${malSourceLabel}</p>`);
 
+    const votesWord = (totalVotes % 10 === 1 && totalVotes % 100 !== 11) ? 'оценки' : 'оценок';
     const voteCountLabel = `<strong>${totalVotes}</strong>`;
     const shikiSourceLabel = getLocale() === 'ru' ?
-        `На основе ${voteCountLabel} ${getRatingWord(totalVotes)} Shikimori` :
+        `На основе ${voteCountLabel} ${votesWord} Shikimori` :
         `From ${voteCountLabel} Shikimori users`;
     shikiRatingElement.insertAdjacentHTML('afterend', `<p class="score-counter">${shikiSourceLabel}</p>`);
 
