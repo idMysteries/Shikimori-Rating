@@ -4,12 +4,9 @@
 // @version      2.8.4
 // @description  Ratings from Shikimori users
 // @author       ImoutoChan
-// @match        http://shikimori.org/*
-// @match        https://shikimori.org/*
-// @match        http://shikimori.one/*
-// @match        https://shikimori.one/*
-// @match        http://shikimori.me/*
-// @match        https://shikimori.me/*
+// @match        *://shikimori.org/*
+// @match        *://shikimori.one/*
+// @match        *://shikimori.me/*
 // @downloadURL  https://github.com/idMysteries/Shikimori-Rating/raw/master/ShikiRating.user.js
 // @updateURL    https://github.com/idMysteries/Shikimori-Rating/raw/master/ShikiRating.user.js
 // @license      MIT
