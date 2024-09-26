@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Shikimori Rating
 // @namespace    http://shikimori.org/
-// @version      2.8.7
+// @version      2.8.8
 // @description  Ratings from Shikimori users
 // @author       ImoutoChan
 // @match        *://shikimori.org/*
@@ -56,10 +56,6 @@ function getRatingWord(number) {
 
     switch (lastDigit) {
       case 1:
-        return cases[0];
-      case 2:
-      case 3:
-      case 4:
         return cases[0];
       default:
         return cases[1];
