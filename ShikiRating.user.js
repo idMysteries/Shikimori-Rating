@@ -1,12 +1,11 @@
 // ==UserScript==
 // @name         Shikimori Rating
 // @namespace    http://shikimori.org/
-// @version      3.1.1
+// @version      3.1.2
 // @description  Ratings from Shikimori users
 // @author       ImoutoChan
-// @match        *://shikimori.org/*
+// @author       idMysteries
 // @match        *://shikimori.one/*
-// @match        *://shikimori.me/*
 // @downloadURL  https://github.com/idMysteries/Shikimori-Rating/raw/master/ShikiRating.user.js
 // @updateURL    https://github.com/idMysteries/Shikimori-Rating/raw/master/ShikiRating.user.js
 // @license      MIT
@@ -58,11 +57,8 @@ const addShikiRating = () => {
     if (!scoreDataJson) return shikiRating.replaceChildren(createNoDataMessage());
 
     let scoreData;
-    try {
-        scoreData = JSON.parse(scoreDataJson);
-    } catch {
-        return shikiRating.replaceChildren(createNoDataMessage());
-    }
+    try { scoreData = JSON.parse(scoreDataJson); }
+    catch { return shikiRating.replaceChildren(createNoDataMessage()); }
 
     if (!scoreData.length) return shikiRating.replaceChildren(createNoDataMessage());
 
@@ -90,12 +86,7 @@ const addShikiRating = () => {
 const onDocumentReady = (callback) => {
     document.addEventListener('page:load', callback);
     document.addEventListener('turbolinks:load', callback);
-
-    if (document.readyState !== "loading") {
-        callback();
-    } else {
-        document.addEventListener('DOMContentLoaded', callback);
-    }
+    document.readyState !== "loading" ? callback() : document.addEventListener('DOMContentLoaded', callback);
 };
 
 onDocumentReady(addShikiRating);
