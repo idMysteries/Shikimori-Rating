@@ -15,13 +15,13 @@
 
 const DEBUG_MODE = false;
 const log = (msg) => DEBUG_MODE && console.log(`ShikiRating: ${msg}`);
-const isRussianLocale = () => document.body.getAttribute('data-locale') === 'ru';
-const isValidPage = () => ["/animes", "/mangas", "/ranobe"].some((path) => window.location.pathname.startsWith(path));
+const isRussian = document.body.getAttribute('data-locale') === 'ru';
+const isValidPage = () => ["/animes", "/mangas", "/ranobe"].some(path => window.location.pathname.startsWith(path));
 
 const createNoDataMessage = () => {
     const msg = document.createElement('p');
     msg.className = 'b-nothing_here';
-    msg.innerText = isRussianLocale() ? 'Недостаточно данных' : 'Insufficient data';
+    msg.innerText = isRussian ? 'Недостаточно данных' : 'Insufficient data';
     Object.assign(msg.style, { textAlign: 'center', color: '#7b8084', marginTop: '15px' });
     return msg;
 };
@@ -42,17 +42,12 @@ const updateScoreElement = (el, score, rounded) => {
     starsEl.style.color = '#456';
 };
 
+
 const addShikiRating = () => {
-    if (!isValidPage() || document.querySelector("#shiki-score")) {
-        log('Invalid page or rating exists');
-        return;
-    }
+    if (!isValidPage() || document.querySelector("#shiki-score")) return log('Invalid page or rating exists');
 
     const malRating = document.querySelector(".scores > .b-rate");
-    if (!malRating) {
-        log("Default rating not found");
-        return;
-    }
+    if (!malRating) return log("Default rating not found");
 
     const scoresContainer = document.querySelector(".scores");
     const shikiRating = malRating.cloneNode(true);
@@ -60,23 +55,16 @@ const addShikiRating = () => {
     scoresContainer.appendChild(shikiRating);
 
     const scoreDataJson = document.querySelector("#rates_scores_stats")?.getAttribute("data-stats");
-    if (!scoreDataJson) {
-        shikiRating.replaceChildren(createNoDataMessage());
-        return;
-    }
+    if (!scoreDataJson) return shikiRating.replaceChildren(createNoDataMessage());
 
     let scoreData;
     try {
         scoreData = JSON.parse(scoreDataJson);
     } catch {
-        shikiRating.replaceChildren(createNoDataMessage());
-        return;
+        return shikiRating.replaceChildren(createNoDataMessage());
     }
 
-    if (!scoreData.length) {
-        shikiRating.replaceChildren(createNoDataMessage());
-        return;
-    }
+    if (!scoreData.length) return shikiRating.replaceChildren(createNoDataMessage());
 
     const { totalScore, totalVotes } = calculateScore(scoreData);
     const score = totalScore / totalVotes, rounded = Math.floor(score);
@@ -84,18 +72,18 @@ const addShikiRating = () => {
 
     updateScoreElement(shikiRating, score, rounded);
 
-    const labels = isRussianLocale()
+    const labels = isRussian
         ? { "1": "Хуже некуда", "2": "Ужасно", "3": "Очень плохо", "4": "Плохо", "5": "Более-менее", "6": "Нормально", "7": "Хорошо", "8": "Отлично", "9": "Великолепно", "10": "Эпик вин!" }
         : { "1": "Worst Ever", "2": "Terrible", "3": "Very Bad", "4": "Bad", "5": "So-so", "6": "Fine", "7": "Good", "8": "Excellent", "9": "Great", "10": "Masterpiece!" };
     shikiRating.querySelector("div.text-score > div.score-notice").textContent = labels[rounded] || '';
 
     const votesWord = totalVotes % 10 === 1 && totalVotes % 100 !== 11 ? 'оценки' : 'оценок';
-    const shikiSource = isRussianLocale()
+    const shikiSource = isRussian
         ? `На основе <strong>${totalVotes}</strong> ${votesWord} Shikimori`
         : `From <strong>${totalVotes}</strong> Shikimori users`;
     shikiRating.insertAdjacentHTML('afterend', `<p class="score-counter" style="text-align:center;color:#7b8084">${shikiSource}</p>`);
 
-    const malSource = isRussianLocale() ? 'На основе оценок MAL' : 'From MAL users';
+    const malSource = isRussian ? 'На основе оценок MAL' : 'From MAL users';
     malRating.insertAdjacentHTML('afterend', `<p class="score-source" style="text-align:center;color:#7b8084;margin-bottom:15px">${malSource}</p>`);
 };
 
