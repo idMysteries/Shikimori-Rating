@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Shikimori Rating
-// @namespace    http://shikimori.org/
-// @version      3.1.2
+// @namespace    https://shikimori.one/
+// @version      3.1.3
 // @description  Ratings from Shikimori users
 // @author       ImoutoChan
 // @author       idMysteries
