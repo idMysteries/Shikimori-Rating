@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Shikimori Rating
 // @namespace    https://shikimori.one/
-// @version      3.1.3
+// @version      3.1.4
 // @description  Ratings from Shikimori users
 // @author       ImoutoChan
 // @author       idMysteries
@@ -16,14 +16,6 @@ const DEBUG_MODE = false;
 const log = (msg) => DEBUG_MODE && console.log(`ShikiRating: ${msg}`);
 const isRussian = document.body.getAttribute('data-locale') === 'ru';
 const isValidPage = () => ["/animes", "/mangas", "/ranobe"].some(path => window.location.pathname.startsWith(path));
-
-const createNoDataMessage = () => {
-    const msg = document.createElement('p');
-    msg.className = 'b-nothing_here';
-    msg.innerText = isRussian ? 'Недостаточно данных' : 'Insufficient data';
-    Object.assign(msg.style, { textAlign: 'center', color: '#7b8084', marginTop: '15px' });
-    return msg;
-};
 
 const calculateScore = (data) => data.reduce((acc, [score, count]) => {
     acc.totalScore += score * count;
@@ -41,7 +33,6 @@ const updateScoreElement = (el, score, rounded) => {
     starsEl.style.color = '#456';
 };
 
-
 const addShikiRating = () => {
     if (!isValidPage() || document.querySelector("#shiki-score")) return log('Invalid page or rating exists');
 
@@ -54,13 +45,13 @@ const addShikiRating = () => {
     scoresContainer.appendChild(shikiRating);
 
     const scoreDataJson = document.querySelector("#rates_scores_stats")?.getAttribute("data-stats");
-    if (!scoreDataJson) return shikiRating.replaceChildren(createNoDataMessage());
+    if (!scoreDataJson) return log("Score data json not found");
 
     let scoreData;
     try { scoreData = JSON.parse(scoreDataJson); }
-    catch { return shikiRating.replaceChildren(createNoDataMessage()); }
+    catch { return log("Can't parse json"); }
 
-    if (!scoreData.length) return shikiRating.replaceChildren(createNoDataMessage());
+    if (!scoreData.length) return log("Err: score data length");
 
     const { totalScore, totalVotes } = calculateScore(scoreData);
     const score = totalScore / totalVotes, rounded = Math.floor(score);
