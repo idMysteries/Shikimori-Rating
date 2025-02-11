@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Shikimori Rating
 // @namespace    https://shikimori.one/
-// @version      3.1.5
+// @version      3.1.6
 // @description  Ratings from Shikimori users
 // @author       ImoutoChan
 // @author       idMysteries
@@ -21,7 +21,7 @@
 
   const updateEl = (el, score, r) => {
     const v = el.querySelector("div.text-score > div.score-value");
-    v.textContent = score.toFixed(2);
+    v.textContent = Math.trunc(score * 100) / 100;
     v.className = `score-value score-${r}`;
     const stars = el.querySelector("div.stars-container > div.stars.score");
     stars.className = `stars score score-${Math.round(score)}`;
