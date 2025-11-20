@@ -6,6 +6,7 @@
 // @author       ImoutoChan
 // @author       idMysteries
 // @match        *://shikimori.one/*
+// @match        *://shikimori.rip/*
 // @downloadURL  https://github.com/idMysteries/Shikimori-Rating/raw/master/ShikiRating.user.js
 // @updateURL    https://github.com/idMysteries/Shikimori-Rating/raw/master/ShikiRating.user.js
 // @license      MIT
