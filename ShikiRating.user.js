@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         Shikimori Rating
 // @namespace    https://shikimori.one/
-// @version      3.1.7
+// @version      3.1.8
 // @description  Ratings from Shikimori users
 // @author       ImoutoChan
 // @author       idMysteries
 // @match        *://shikimori.one/*
 // @match        *://shiki.one/*
+// @match        *://shikimori.io/*
 // @downloadURL  https://github.com/idMysteries/Shikimori-Rating/raw/master/ShikiRating.user.js
 // @updateURL    https://github.com/idMysteries/Shikimori-Rating/raw/master/ShikiRating.user.js
 // @license      MIT
